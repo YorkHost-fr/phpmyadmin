@@ -1,0 +1,59 @@
+name: Sync upstream phpMyAdmin
+
+on:
+  schedule:
+    # Every day at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || github.token }}
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/phpmyadmin/phpmyadmin.git
+          git fetch upstream master
+
+      - name: Check for new upstream commits
+        id: check
+        run: |
+          if git merge-base --is-ancestor upstream/master origin/master; then
+            echo "No new upstream commits."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push sync branch
+        if: steps.check.outputs.new == 'true'
+        run: git push origin --force refs/remotes/upstream/master:refs/heads/upstream-sync
+
+      - name: Create PR and enable auto-merge
+        if: steps.check.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN || github.token }}
+        run: |
+          pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head upstream-sync --base master --state open --json number --jq '.[0].number')
+          if [ -z "$pr" ]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" \
+              --head upstream-sync --base master \
+              --title "Sync avec phpMyAdmin upstream ($(date -u +%F))" \
+              --body "Synchronisation automatique de \`phpmyadmin/phpmyadmin\` (branche \`master\`) vers ce fork. PR créée par le workflow \`upstream-sync.yml\`."
+            pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head upstream-sync --base master --state open --json number --jq '.[0].number')
+          fi
+          # Prefer auto-merge (waits for required checks); fall back to a direct
+          # merge when the repository has auto-merge disabled and the PR is clean.
+          gh pr merge "$pr" --repo "$GITHUB_REPOSITORY" --merge --auto \
+            || gh pr merge "$pr" --repo "$GITHUB_REPOSITORY" --merge \
+            || echo "::warning::Merge automatique impossible (conflits probables) — résoudre la PR #$pr manuellement."
