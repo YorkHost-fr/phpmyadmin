@@ -1,0 +1,109 @@
+name: Sync master into design-yorkhost
+
+# Second stage of the update pipeline:
+#   upstream phpMyAdmin -> master (upstream-sync.yml, on master, 06:00 UTC)
+#   master -> design-yorkhost (this workflow, 06:30 UTC)
+# Merge conflicts on .github/workflows files deliberately removed from this
+# branch are auto-resolved by keeping the deletion; any other conflict opens
+# a PR master -> design-yorkhost for manual resolution.
+
+on:
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        if: vars.SYNC_APP_ID != ''
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SYNC_APP_ID }}
+          private-key: ${{ secrets.SYNC_APP_PRIVATE_KEY }}
+
+      - name: Resolve token
+        id: token
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          PAT: ${{ secrets.SYNC_TOKEN }}
+          FALLBACK: ${{ github.token }}
+        run: |
+          token="${APP_TOKEN:-${PAT:-$FALLBACK}}"
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout design-yorkhost
+        uses: actions/checkout@v4
+        with:
+          ref: design-yorkhost
+          fetch-depth: 0
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Merge master
+        id: merge
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin master
+
+          if git merge-base --is-ancestor origin/master HEAD; then
+            echo "design-yorkhost already contains master."
+            exit 0
+          fi
+
+          # Keep master-only workflow files off the deployment branch even
+          # when a merge re-adds them.
+          prune_master_only_files() {
+            if [ -f .github/workflows/upstream-sync.yml ]; then
+              git rm -q -f .github/workflows/upstream-sync.yml
+              git commit -q -m "ci: keep upstream-sync.yml off the deployment branch"
+            fi
+          }
+
+          if git merge --no-edit origin/master; then
+            prune_master_only_files
+            git push origin design-yorkhost
+            exit 0
+          fi
+
+          # Try to auto-resolve: keep the deletion of workflow files that were
+          # deliberately removed from this deployment branch.
+          unresolvable=false
+          while IFS= read -r f; do
+            case "$f" in
+              .github/workflows/*)
+                if [ ! -e "$f" ] || ! git ls-tree -r HEAD --name-only | grep -qx "$f"; then
+                  git rm -f --ignore-unmatch "$f"
+                else
+                  unresolvable=true
+                fi
+                ;;
+              *) unresolvable=true ;;
+            esac
+          done <<< "$(git diff --name-only --diff-filter=U)"
+
+          if [ "$unresolvable" = false ]; then
+            git commit --no-edit
+            prune_master_only_files
+            git push origin design-yorkhost
+            exit 0
+          fi
+
+          git merge --abort
+          pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head master --base design-yorkhost --state open --json number --jq '.[0].number')
+          if [ -z "$pr" ]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" \
+              --head master --base design-yorkhost \
+              --title "Report de master vers design-yorkhost (conflits à résoudre)" \
+              --body "Le merge automatique de \`master\` dans \`design-yorkhost\` a rencontré des conflits hors \`.github/workflows/\`. Résoudre manuellement puis merger."
+          fi
+          echo "::warning::Conflits lors du merge de master — PR ouverte pour résolution manuelle."
