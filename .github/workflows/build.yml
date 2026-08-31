@@ -1,0 +1,39 @@
+name: Build design-yorkhost
+on:
+  push:
+    branches: [design-yorkhost]
+  pull_request:
+    branches: [design-yorkhost]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, mysqli, zip, gd
+
+      - name: Composer
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Yarn build
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
+
+      - name: Locales
+        run: |
+          sudo apt-get install -y gettext
+          for f in resources/po/*.po; do
+            lang=$(basename "$f" .po)
+            mkdir -p "resources/locale/$lang/LC_MESSAGES"
+            msgfmt "$f" -o "resources/locale/$lang/LC_MESSAGES/phpmyadmin.mo"
+          done
+
+      - name: Sanity check
+        run: |
+          test -f public/themes/yorkhost/css/theme.css
+          php -l config.sample.inc.php
