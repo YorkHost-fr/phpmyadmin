@@ -169,6 +169,35 @@ li.fast_filter {
   font-weight: 500;
 }
 
+// Login page: YorkHost mark and a calmer heading than the display scale.
+body#loginform {
+  #imLogo {
+    height: 72px;
+    width: auto;
+    margin-top: 2rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0.75rem 0 1.5rem;
+  }
+}
+
+// Full-name popup shown when a truncated navigation item is hovered:
+// style it as a proper tooltip chip instead of raw overlapping text.
+#full_name_layer {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--#{$prefix}border-color);
+  border-radius: $border-radius-sm;
+  background: var(--#{$prefix}tertiary-bg);
+  box-shadow: $box-shadow;
+
+  a {
+    text-decoration: none;
+  }
+}
+
 // Thin, discreet scrollbars in the navigation tree.
 #pma_navigation_tree_content,
 #pma_navigation_content {
@@ -211,6 +240,10 @@ li.fast_filter {
   #pma_navigation_collapser {
     background-color: #262626;
     color: var(--#{$prefix}body-color);
+  }
+
+  #full_name_layer {
+    background: #262626;
   }
 
   .card {
