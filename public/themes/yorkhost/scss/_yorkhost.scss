@@ -1,0 +1,219 @@
+// YorkHost brand layer — loaded after every other partial so it wins.
+
+// Rubik variable font, self-hosted next to the compiled CSS (css/theme.css).
+@font-face {
+  font-family: Rubik;
+  src: url("../fonts/Rubik-VariableFont_wght.ttf") format("truetype-variations"),
+    url("../fonts/Rubik-VariableFont_wght.ttf") format("truetype");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ---------------------------------------------------------------------------
+// Navigation panel
+// ---------------------------------------------------------------------------
+
+#pma_navigation {
+  border-right: 1px solid var(--#{$prefix}border-color);
+
+  #pmalogo {
+    background-color: transparent;
+    padding: 14px 12px 10px;
+
+    img {
+      height: 38px;
+      width: auto;
+    }
+  }
+
+  #navipanellinks {
+    background-color: transparent;
+    border-bottom: 1px solid var(--#{$prefix}border-color);
+  }
+}
+
+#pma_navigation_tree {
+  li {
+    &.activePointer,
+    &.selected {
+      color: inherit;
+      background-color: rgba($yh-violet, 0.08);
+      border-radius: $border-radius-sm;
+    }
+  }
+
+  // Soften the tree connector lines.
+  div.block {
+    i,
+    b {
+      border-left-color: var(--#{$prefix}border-color);
+      border-bottom-color: var(--#{$prefix}border-color);
+    }
+  }
+
+  .list_container {
+    border-left-color: var(--#{$prefix}border-color);
+  }
+}
+
+li.fast_filter {
+  border-left-color: var(--#{$prefix}border-color);
+}
+
+#pma_navigation div.pageselector {
+  border-left-color: var(--#{$prefix}border-color);
+}
+
+#pma_navigation_db_select select {
+  background: var(--#{$prefix}body-bg);
+  border: 1px solid var(--#{$prefix}border-color);
+  border-radius: $border-radius-sm;
+  color: var(--#{$prefix}body-color);
+}
+
+#pma_navigation_resizer {
+  background-color: var(--#{$prefix}border-color);
+}
+
+#pma_navigation_collapser {
+  background-color: var(--#{$prefix}tertiary-bg);
+  color: var(--#{$prefix}secondary-color);
+  border: 1px solid var(--#{$prefix}border-color);
+  border-left: 0;
+  border-radius: 0 $border-radius-sm $border-radius-sm 0;
+  text-shadow: none;
+}
+
+// ---------------------------------------------------------------------------
+// Top bar: breadcrumb + main menu
+// ---------------------------------------------------------------------------
+
+#topmenucontainer {
+  .navbar {
+    position: relative;
+    background-color: var(--#{$prefix}tertiary-bg);
+    border-bottom: 1px solid var(--#{$prefix}border-color);
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+
+    // Brand gradient hairline across the top of the workspace.
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: $yh-gradient-banner;
+      pointer-events: none;
+    }
+  }
+
+  .navbar-nav .nav-link {
+    color: var(--#{$prefix}body-color);
+    font-weight: 500;
+    border-radius: $border-radius-sm;
+    padding: 0.4rem 0.75rem;
+    margin: 0 0.1rem;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover,
+    &:focus {
+      color: var(--#{$prefix}link-color);
+      background-color: rgba($yh-violet, 0.08);
+    }
+  }
+
+  .navbar-nav .nav-item.active .nav-link {
+    color: var(--#{$prefix}link-color);
+    background-color: rgba($yh-violet, 0.1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Components
+// ---------------------------------------------------------------------------
+
+.btn {
+  font-weight: 500;
+}
+
+.card {
+  box-shadow: $box-shadow-sm;
+
+  .card-header {
+    font-weight: 500;
+  }
+}
+
+.modal-content {
+  box-shadow: $box-shadow-lg;
+}
+
+.dropdown-menu {
+  border-color: var(--#{$prefix}border-color);
+  box-shadow: $box-shadow;
+}
+
+.alert {
+  border-radius: $border-radius;
+}
+
+.badge {
+  font-weight: 500;
+}
+
+// Thin, discreet scrollbars in the navigation tree.
+#pma_navigation_tree_content,
+#pma_navigation_content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba($yh-violet, 0.35) transparent;
+}
+
+// ---------------------------------------------------------------------------
+// Dark mode adjustments (game-panel surfaces + dark violet accents)
+// ---------------------------------------------------------------------------
+
+@include color-mode(dark) {
+  #topmenucontainer .navbar {
+    background-color: #1d1d1d;
+  }
+
+  #pma_navigation_tree {
+    li {
+      &.activePointer,
+      &.selected {
+        color: var(--#{$prefix}body-color);
+        background-color: rgba($yh-violet-dark-accent, 0.14);
+      }
+    }
+  }
+
+  #topmenucontainer {
+    .navbar-nav .nav-link {
+      &:hover,
+      &:focus {
+        background-color: rgba($yh-violet-dark-accent, 0.14);
+      }
+    }
+
+    .navbar-nav .nav-item.active .nav-link {
+      background-color: rgba($yh-violet-dark-accent, 0.16);
+    }
+  }
+
+  #pma_navigation_collapser {
+    background-color: #262626;
+    color: var(--#{$prefix}body-color);
+  }
+
+  .card {
+    background-color: #1d1d1d;
+  }
+}

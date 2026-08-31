@@ -177,6 +177,7 @@ module.exports = [
             'public/themes/metro/css/theme': publicPath + '/themes/metro/scss/theme.scss',
             'public/themes/original/css/theme': publicPath + '/themes/original/scss/theme.scss',
             'public/themes/pmahomme/css/theme': publicPath + '/themes/pmahomme/scss/theme.scss',
+            'public/themes/yorkhost/css/theme': publicPath + '/themes/yorkhost/scss/theme.scss',
             'public/setup/styles': publicPath + '/setup/scss/styles.scss',
         },
         output: {

@@ -155,6 +155,11 @@ $cfg['SaveDir'] = '';
 //$cfg['URLQueryEncryptionSecretKey'] = '';
 
 /**
+ * YorkHost brand theme (uncomment to make it the default).
+ */
+//$cfg['ThemeDefault'] = 'yorkhost';
+
+/**
  * You can find more configuration options in the documentation
  * in the docs/ folder or at <https://docs.phpmyadmin.net/>.
  */

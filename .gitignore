@@ -106,5 +106,6 @@ infection.json5
 !/public/themes/metro/
 !/public/themes/original/
 !/public/themes/pmahomme/
+!/public/themes/yorkhost/
 /public/themes/*/css/*.css
 /public/themes/*/css/*.css.map

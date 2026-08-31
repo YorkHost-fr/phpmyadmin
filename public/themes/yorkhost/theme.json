@@ -1,0 +1,9 @@
+{
+    "name": "YorkHost",
+    "version": "6.0",
+    "description": "YorkHost brand theme for phpMyAdmin",
+    "author": "YorkHost",
+    "url": "https://yorkhost.fr/",
+    "supports": ["6.0"],
+    "colorModes": ["light", "dark"]
+}
