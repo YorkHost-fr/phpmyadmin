@@ -63,9 +63,15 @@ jobs:
           # Keep master-only workflow files off the deployment branch even
           # when a merge re-adds them.
           prune_master_only_files() {
-            if [ -f .github/workflows/upstream-sync.yml ]; then
-              git rm -q -f .github/workflows/upstream-sync.yml
-              git commit -q -m "ci: keep upstream-sync.yml off the deployment branch"
+            pruned=false
+            for f in .github/workflows/upstream-sync.yml .github/workflows/sync-master.yml; do
+              if [ -f "$f" ]; then
+                git rm -q -f "$f"
+                pruned=true
+              fi
+            done
+            if [ "$pruned" = true ]; then
+              git commit -q -m "ci: keep master-only sync workflows off the deployment branch"
             fi
           }
 
