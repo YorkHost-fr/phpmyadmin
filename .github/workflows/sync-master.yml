@@ -60,7 +60,17 @@ jobs:
             exit 0
           fi
 
+          # Keep master-only workflow files off the deployment branch even
+          # when a merge re-adds them.
+          prune_master_only_files() {
+            if [ -f .github/workflows/upstream-sync.yml ]; then
+              git rm -q -f .github/workflows/upstream-sync.yml
+              git commit -q -m "ci: keep upstream-sync.yml off the deployment branch"
+            fi
+          }
+
           if git merge --no-edit origin/master; then
+            prune_master_only_files
             git push origin design-yorkhost
             exit 0
           fi
@@ -83,6 +93,7 @@ jobs:
 
           if [ "$unresolvable" = false ]; then
             git commit --no-edit
+            prune_master_only_files
             git push origin design-yorkhost
             exit 0
           fi
